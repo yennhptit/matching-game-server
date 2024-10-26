@@ -239,8 +239,8 @@ public class UserDAO extends DAO{
             PreparedStatement preparedStatement = con.prepareStatement("SELECT user.ID, user.username, user.numberOfGame, user.numberOfWin, " +
                     "user.numberOfDraw, user.IsOnline, user.IsPlaying, user.star\n"
                     + "FROM user\n"
-                    + "ORDER BY user.star DESC\n"
-                    + "LIMIT 8"
+                    + "ORDER BY user.star DESC"
+
             );
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
@@ -392,6 +392,59 @@ public class UserDAO extends DAO{
         }
         return null;
     }
+    public User getbyID(int id)
+    {
+        try {
+            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM user WHERE ID = ?");
+            preparedStatement.setInt(1, id);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()) {
+                return new User(rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getInt(4),
+                        rs.getInt(5),
+                        rs.getInt(6),
+                        (rs.getInt(7) != 0),
+                        (rs.getInt(8) != 0),
+                        rs.getInt(9),
+                        getRank(rs.getInt(1)
+                        ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public List<User> getUsersByUsernameContaining(String character) {
+        List<User> ListUser = new ArrayList<>();
+        String query = "SELECT user.ID, user.username, user.numberOfGame, user.numberOfWin, " +
+                "user.numberOfDraw, user.IsOnline, user.IsPlaying, user.star " +
+                "FROM user " +
+                "WHERE user.username LIKE ? " + // Use LIKE for pattern matching
+                "ORDER BY user.star DESC"; // Order by star in descending order
 
+        try {
+            PreparedStatement preparedStatement = con.prepareStatement(query);
+            preparedStatement.setString(1, "%" + character + "%"); // Set the parameter for the LIKE clause
+
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                ListUser.add(new User(rs.getInt(1),
+                        rs.getString(2),
+                        rs.getInt(3),
+                        rs.getInt(4),
+                        rs.getInt(5),
+                        (rs.getInt(6) != 0),
+                        (rs.getInt(7) != 0),
+                        rs.getInt(8),
+                        getRank(rs.getInt(1)))); // Assuming you have a getRank method to fetch the rank
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ListUser;
+    }
 
 }

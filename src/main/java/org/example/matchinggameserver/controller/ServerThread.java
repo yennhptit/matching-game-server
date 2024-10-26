@@ -98,6 +98,7 @@ public class ServerThread implements Runnable {
                     break;
                 }
                 String[] messageSplit = message.split(",");
+                System.out.println("messageSplit[0]: " + messageSplit[0]);
                 //Xác minh
                 if (messageSplit[0].equals("client-verify")) {
                     System.out.println(message);
@@ -129,9 +130,14 @@ public class ServerThread implements Runnable {
                 }
                 //Xử lý người chơi đăng xuất
                 if (messageSplit[0].equals("offline")) {
-                    userDAO.updateToOffline(this.user.getID());
+                    System.out.println(messageSplit[1]);
+                    int id = Integer.parseInt(messageSplit[1]);
+                    User u = userDAO.getbyID(id);
+//                    userDAO.updateToOffline(this.user.getID());
+                    userDAO.updateToOffline(id);
 //                    Server.admin.addMessage("[" + user.getID() + "] " + user.getNickname() + " đã offline");
-                    Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getUsername() + " đã offline");
+                    Server.serverThreadBus.boardCast(clientNumber, "chat-server," + u.getUsername() + " đã offline");
+                    write("restart,login");
                     this.user = null;
                 }
                 //Xử lý xem danh sách bạn bè
@@ -178,10 +184,22 @@ public class ServerThread implements Runnable {
                 }
                 //Xử lý lấy danh sách bảng xếp hạng
                 if (messageSplit[0].equals("get-rank-charts")) {
+                    System.out.println("get-rank-charts");
                     List<User> ranks = userDAO.getUserStaticRank();
                     StringBuilder res = new StringBuilder("return-get-rank-charts,");
                     for (User user : ranks) {
                         res.append(getStringFromUser(user)).append(",");
+                        System.out.println(user.toString());
+                    }
+                    System.out.println(res);
+                    write(res.toString());
+                }
+                // Xử lý lấy list user chua string
+                if (messageSplit[0].equals("get-list-user-contain-string")) {
+                    List<User> users = userDAO.getUsersByUsernameContaining(messageSplit[1]);
+                    StringBuilder res = new StringBuilder("return-get-list-user-contain-string,");
+                    for (User user : users) {
+                        res.append(user.getID()).append(",").append(user.getUsername()).append(",");
                     }
                     System.out.println(res);
                     write(res.toString());
@@ -370,5 +388,6 @@ public class ServerThread implements Runnable {
         os.write(message);
         os.newLine();
         os.flush();
+        System.out.println("send thành công");
     }
 }

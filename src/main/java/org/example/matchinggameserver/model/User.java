@@ -53,6 +53,12 @@ public class User {
         this.star = star;
         this.rank = rank;
     }
+    public User(int ID, String username, int star, boolean isOnline) {
+        this.ID = ID;
+        this.username = username;
+        this.star = star;
+        this.isOnline = isOnline;
+    }
 
     public int getID() {
         return ID;
