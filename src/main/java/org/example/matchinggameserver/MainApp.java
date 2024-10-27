@@ -67,6 +67,10 @@ public class MainApp extends Application {
             primaryStage.setTitle("Memory Game");
             primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/org/example/matchinggameserver/img/logo.png")));
             primaryStage.setScene(scene);
+
+            // Ngăn không cho phép thay đổi kích thước cửa sổ
+            primaryStage.setResizable(false);
+
             primaryStage.show();
 
             // Start the server in a new thread
