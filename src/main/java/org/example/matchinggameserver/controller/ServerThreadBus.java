@@ -20,9 +20,12 @@ public class ServerThreadBus {
     }
 
     public void boardCast(int id, String message) {
+        System.out.println("test: " + message);
         for (ServerThread serverThread : Server.serverThreadBus.getListServerThreads()) {
-            if (serverThread.getClientNumber() != id) {
+            System.out.println("clientNumber: " + serverThread.getClientNumber() + " id: " + id);
+            if (serverThread.getClientNumber() == id) {
                 try {
+                    System.out.println("test2: " + message);
                     serverThread.write(message);
                 } catch (IOException ex) {
                     ex.printStackTrace();

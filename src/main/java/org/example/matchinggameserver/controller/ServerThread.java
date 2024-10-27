@@ -1,5 +1,6 @@
 package org.example.matchinggameserver.controller;
 
+import org.example.matchinggameserver.MainApp;
 import org.example.matchinggameserver.dao.UserDAO;
 import org.example.matchinggameserver.model.User;
 
@@ -18,6 +19,7 @@ public class ServerThread implements Runnable {
     private Room room;
     private final UserDAO userDAO;
     private final String clientIP;
+    private AdminController adminController;
 
     public ServerThread(Socket socketOfServer, int clientNumber) {
         this.socketOfServer = socketOfServer;
@@ -26,6 +28,7 @@ public class ServerThread implements Runnable {
         userDAO = new UserDAO();
         isClosed = false;
         room = null;
+        adminController = new AdminController();
 
         if (this.socketOfServer.getInetAddress().getHostAddress().equals("127.0.0.1")) {
             clientIP = "127.0.0.1";
@@ -91,6 +94,7 @@ public class ServerThread implements Runnable {
             os = new BufferedWriter(new OutputStreamWriter(socketOfServer.getOutputStream()));
             System.out.println("Khời động luông mới thành công, ID là: " + clientNumber);
             write("server-send-id" + "," + this.clientNumber);
+            AdminController adminController = MainApp.getAdminController();
             String message;
             while (!isClosed) {
                 message = is.readLine();
@@ -110,7 +114,9 @@ public class ServerThread implements Runnable {
                         this.user = user1;
                         userDAO.updateToOnline(this.user.getID());
                         Server.serverThreadBus.boardCast(clientNumber, "chat-server," + user1.getUsername() + " đang online");
-//                        Server.admin.addMessage("[" + user1.getID() + "] " + user1.getNickname() + " đang online");
+                        adminController.addMessage("[" + user1.getID() + "] " + user1.getUsername() + " đang online");
+//                        Server.admin.addMessage("[" + user1.getID() + "] " + user1.getUsername() + " đang online");
+//                        Server.adminController.addMessage("[" + user1.getID() + "] " + user1.getUsername() + " đang online");
                     } else {
                         write("dupplicate-login," + messageSplit[1] + "," + messageSplit[2]);
                     }
@@ -135,8 +141,9 @@ public class ServerThread implements Runnable {
                     User u = userDAO.getbyID(id);
 //                    userDAO.updateToOffline(this.user.getID());
                     userDAO.updateToOffline(id);
-//                    Server.admin.addMessage("[" + user.getID() + "] " + user.getNickname() + " đã offline");
+//                    Server.admin.addMessage("[" + user.getID() + "] " + user.getUsername() + " đã offline");
                     Server.serverThreadBus.boardCast(clientNumber, "chat-server," + u.getUsername() + " đã offline");
+                    adminController.addMessage("[" + u.getID() + "] " + u.getUsername() + " đã offline");
                     write("restart,login");
                     this.user = null;
                 }
@@ -153,7 +160,8 @@ public class ServerThread implements Runnable {
                 //Xử lý chat toàn server
                 if (messageSplit[0].equals("chat-server")) {
                     Server.serverThreadBus.boardCast(clientNumber, messageSplit[0] + "," + user.getUsername() + " : " + messageSplit[1]);
-//                    Server.admin.addMessage("[" + user.getID() + "] " + user.getNickname() + " : " + messageSplit[1]);
+//                    Server.admin.addMessage("[" + user.getID() + "] " + user.getUsername() + " : " + messageSplit[1]);
+                    adminController.addMessage("[" + user.getID() + "] " + user.getUsername() + " : " + messageSplit[1]);
                 }
                 //Xử lý vào phòng trong chức năng tìm kiếm phòng
                 if (messageSplit[0].equals("go-to-room")) {
@@ -362,7 +370,8 @@ public class ServerThread implements Runnable {
                 userDAO.updateToOffline(this.user.getID());
                 userDAO.updateToNotPlaying(this.user.getID());
                 Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getUsername() + " đã offline");
-//                Server.admin.addMessage("[" + user.getID() + "] " + user.getNickname() + " đã offline");
+//                Server.admin.addMessage("[" + user.getID() + "] " + user.getUsername() + " đã offline");
+                adminController.addMessage("[" + user.getID() + "] " + user.getUsername() + " đã offline");
             }
 
             //remove thread khỏi bus
@@ -388,6 +397,6 @@ public class ServerThread implements Runnable {
         os.write(message);
         os.newLine();
         os.flush();
-        System.out.println("send thành công");
+        System.out.println(message + " send thành công");
     }
 }

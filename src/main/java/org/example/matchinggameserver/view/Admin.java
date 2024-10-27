@@ -276,7 +276,7 @@ public class Admin extends javax.swing.JFrame implements Runnable {
                 }
                 serverThread.setRoom(null);
             }
-            Server.admin.addMessage("User có ID " + userId + " đã bị BAN");
+//            Server.admin.addMessage("User có ID " + userId + " đã bị BAN");
             serverThread.setUser(null);
             Server.serverThreadBus.boardCast(-1, "chat-server," + "User có ID " + userId + " đã bị BAN");
             JOptionPane.showMessageDialog(rootPane, "Đã BAN user " + userId);
