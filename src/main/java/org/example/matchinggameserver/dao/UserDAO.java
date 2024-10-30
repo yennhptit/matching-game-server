@@ -25,7 +25,6 @@ public class UserDAO extends DAO{
             preparedStatement.setString(2, user.getPassword());
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()) {
-                System.out.println(user.toString());
                 return new User(rs.getInt(1),
                         rs.getString(2),
                         rs.getString(3),

@@ -14,70 +14,63 @@
 <AnchorPane prefHeight="800.0" prefWidth="1200.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.matchinggameserver.controller.AdminController">
     <children>
         <ImageView fitHeight="800.0" fitWidth="1200.0" pickOnBounds="true" preserveRatio="false">
-         <image>
-            <Image url="@img/back.jpg" />
-         </image>
-      </ImageView>
-      <Label layoutX="365.0" layoutY="14.0" text="Server Admin Dashboard">
-         <font>
-            <Font name="System Bold" size="40.0" />
-         </font>
-      </Label>
-      <ScrollPane layoutX="40.0" layoutY="85.0" prefHeight="200.0" prefWidth="520.0" vbarPolicy="NEVER">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="503.0">
-               <children>
-                  <TextArea fx:id="threadListTextArea" prefHeight="200.0" prefWidth="520.0" wrapText="true">
-                     <font>
-                        <Font size="15.0" />
-                     </font></TextArea>
-               </children>
-            </AnchorPane>
-        </content>
-      </ScrollPane>
-      <ScrollPane layoutX="641.0" layoutY="85.0" prefHeight="200.0" prefWidth="520.0" vbarPolicy="NEVER">
+            <image>
+                <Image url="@img/back.jpg" />
+            </image>
+        </ImageView>
+        <Label layoutX="365.0" layoutY="14.0" text="Server Admin Dashboard">
+            <font>
+                <Font name="System Bold" size="40.0" />
+            </font>
+        </Label>
+        <ScrollPane layoutX="40.0" layoutY="85.0" prefHeight="200.0" prefWidth="520.0" vbarPolicy="NEVER">
+            <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="503.0">
+                    <children>
+                        <TextArea fx:id="threadListTextArea" prefHeight="200.0" prefWidth="520.0" wrapText="true">
+                            <font>
+                                <Font size="15.0" />
+                            </font></TextArea>
+                    </children>
+                </AnchorPane>
+            </content>
+        </ScrollPane>
+        <ScrollPane layoutX="641.0" layoutY="85.0" prefHeight="200.0" prefWidth="520.0" vbarPolicy="NEVER">
+            <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="502.0">
+                    <children>
+                        <TextArea fx:id="roomListTextArea" prefHeight="200.0" prefWidth="520.0" wrapText="true">
+                            <font>
+                                <Font size="15.0" />
+                            </font></TextArea>
+                    </children>
+                </AnchorPane>
+            </content>
+        </ScrollPane>
+        <Button fx:id="getThreadsButton" layoutX="212.0" layoutY="302.0" mnemonicParsing="false" onAction="#getThreads" text="Get Threads">
+            <font>
+                <Font name="System Bold" size="25.0" />
+            </font>
+        </Button>
+        <Button fx:id="getRoomsButton" layoutX="813.0" layoutY="302.0" mnemonicParsing="false" onAction="#getRooms" text="Get Rooms">
+            <font>
+                <Font name="System Bold" size="25.0" />
+            </font>
+        </Button>
+        <ScrollPane fx:id="messageScrollPane" layoutX="40.0" layoutY="400.0" prefHeight="299.0" prefWidth="1122.0" vbarPolicy="AS_NEEDED">
          <content>
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="502.0">
-               <children>
-                  <TextArea fx:id="roomListTextArea" prefHeight="200.0" prefWidth="520.0" wrapText="true">
-                     <font>
-                        <Font size="15.0" />
-                     </font></TextArea>
-               </children>
-            </AnchorPane>
+            <VBox fx:id="messageContainer" prefHeight="289.0" prefWidth="1099.0" />
          </content>
-      </ScrollPane>
-      <Button fx:id="getThreadsButton" layoutX="212.0" layoutY="302.0" mnemonicParsing="false" onAction="#getThreads" text="Get Threads">
-         <font>
-            <Font name="System Bold" size="25.0" />
-         </font>
-      </Button>
-      <Button fx:id="getRoomsButton" layoutX="813.0" layoutY="302.0" mnemonicParsing="false" onAction="#getRooms" text="Get Rooms">
-         <font>
-            <Font name="System Bold" size="25.0" />
-         </font>
-      </Button>
-      <ScrollPane layoutX="40.0" layoutY="400.0" prefHeight="299.0" prefWidth="1122.0" vbarPolicy="NEVER">
-         <content>
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="298.0" prefWidth="1120.0">
-               <children>
-<!--                   <TextArea fx:id="messListTextArea" prefHeight="299.0" prefWidth="1122.0" wrapText="true" />-->
-                   <VBox fx:id="messageContainer" layoutX="9.0" prefHeight="400.0" prefWidth="1102.0" spacing="10">
-                       <!-- Các thông điệp sẽ được thêm vào đây -->
-                   </VBox>
-               </children>
-            </AnchorPane>
-         </content>
-      </ScrollPane>
-      <TextField fx:id="serverMess" layoutX="40.0" layoutY="722.0" prefHeight="58.0" prefWidth="1018.0">
-         <font>
-            <Font size="20.0" />
-         </font>
-      </TextField>
-      <Button fx:id="publishMessageButton" layoutX="1069.0" layoutY="725.0" mnemonicParsing="false" onAction="#sendMessage" text="Send">
-         <font>
-            <Font name="System Bold" size="25.0" />
-         </font>
-      </Button>
+        </ScrollPane>
+        <TextField fx:id="serverMess" layoutX="40.0" layoutY="722.0" prefHeight="58.0" prefWidth="1018.0">
+            <font>
+                <Font size="20.0" />
+            </font>
+        </TextField>
+        <Button fx:id="publishMessageButton" layoutX="1069.0" layoutY="725.0" mnemonicParsing="false" onAction="#sendMessage" text="Send">
+            <font>
+                <Font name="System Bold" size="25.0" />
+            </font>
+        </Button>
     </children>
 </AnchorPane>

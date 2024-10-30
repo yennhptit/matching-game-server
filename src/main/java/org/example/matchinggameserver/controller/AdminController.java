@@ -3,6 +3,7 @@ package org.example.matchinggameserver.controller;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
@@ -15,6 +16,10 @@ import org.example.matchinggameserver.dao.UserDAO;
 import org.example.matchinggameserver.view.Admin;
 
 public class AdminController implements Runnable{
+
+    @FXML
+    private ScrollPane messageScrollPane;
+
 
     @FXML
     private TextArea threadListTextArea;
@@ -109,7 +114,7 @@ public class AdminController implements Runnable{
     protected void sendMessage() {
         String message = serverMess.getText().trim();
         if (!message.isEmpty() && Server.serverThreadBus != null) {
-            Server.serverThreadBus.boardCast(-1, "chat-server,Thông báo từ máy chủ : " + message);
+            Server.serverThreadBus.boardCast(-1, "chat-server,Server : " + message);
 //            messListTextArea.appendText("Server: " + message + "\n");
             addMessage("Server: " + message);
             serverMess.clear();
@@ -143,20 +148,101 @@ public class AdminController implements Runnable{
 //        }
 //
 //    }
-    public void addMessage(String message) {
-        // Kiểm tra xem thông điệp có dạng [16] hay không
-        if (message.matches("\\[\\d+\\].*")) {
-            // Tách số trong ngoặc vuông và phần còn lại
-            String[] parts = message.split(" ", 2);
+//public void addMessage(String message) {
+//    System.out.println("check message: " + message);
+//    // Kiểm tra xem thông điệp có dạng [16] hay không
+//    if (message.matches("\\[\\d+\\].*")) {
+//        // Tách số trong ngoặc vuông và phần còn lại
+//        String[] parts = message.split(" ", 2);
+//
+//        // Tạo phần văn bản cho số trong ngoặc vuông
+//        Text part1 = new Text(parts[0] + " "); // Đây là [16]
+//        part1.setFill(Color.RED); // Đặt màu đỏ cho phần này
+//        part1.setFont(Font.font("System", FontWeight.BOLD, 15)); // Đặt cỡ chữ 15 và in đậm
+//
+//        // Tạo phần văn bản cho phần còn lại
+//        Text part2 = new Text(parts.length > 1 ? parts[1] : ""); // Đây là abc đang online
+//        part2.setFill(Color.BLACK); // Đặt màu đen cho phần này
+//        part2.setFont(Font.font(15)); // Đặt cỡ chữ 15
+//
+//        // Tạo một TextFlow để chứa các phần văn bản
+//        TextFlow textFlow = new TextFlow(part1, part2);
+//
+//        // Thêm TextFlow vào VBox
+//        Platform.runLater(() -> {
+//            messageContainer.getChildren().add(textFlow);
+//            scrollToBottom(); // Cuộn xuống cuối sau khi thêm thông điệp
+//        });
+//    } else {
+//        // Tách thông điệp thành hai phần nếu có dấu ':'
+//        String[] messageSplit = message.split(":", 2);
+//        if (messageSplit.length > 1) {
+//            // Tạo phần văn bản cho phần đầu tiên
+//            Text part1 = new Text(messageSplit[0] + ":"); // Ví dụ: "Server:"
+//            part1.setFill(Color.RED); // Đặt màu đỏ cho phần đầu
+//            part1.setFont(Font.font("System", FontWeight.BOLD, 15)); // Đặt cỡ chữ 15 và in đậm
+//
+//            // Tạo phần văn bản cho phần còn lại
+//            Text part2 = new Text(messageSplit[1]);
+//            part2.setFill(Color.BLACK); // Đặt màu đen cho phần còn lại
+//            part2.setFont(Font.font(15)); // Đặt cỡ chữ 15
+//
+//            // Tạo một TextFlow để chứa các phần văn bản
+//            TextFlow textFlow = new TextFlow(part1, part2);
+//
+//            // Thêm TextFlow vào VBox
+//            Platform.runLater(() -> {
+//                messageContainer.getChildren().add(textFlow);
+//                scrollToBottom(); // Cuộn xuống cuối sau khi thêm thông điệp
+//            });
+//        } else {
+//            // Nếu không có phần nào được tách ra, thêm toàn bộ thông điệp
+//            Platform.runLater(() -> {
+//                Text fullMessage = new Text(message);
+//                fullMessage.setFill(Color.BLACK);
+//                fullMessage.setFont(Font.font(15));
+//                messageContainer.getChildren().add(fullMessage);
+//                scrollToBottom(); // Cuộn xuống cuối sau khi thêm thông điệp
+//            });
+//        }
+//    }
+//    messageContainer.requestLayout(); // Yêu cầu sắp xếp lại layout
+//}
+public void addMessage(String message) {
+    // Kiểm tra xem thông điệp có dạng [16] hay không
+    if (message.matches("\\[\\d+\\].*")) {
+        // Tách số trong ngoặc vuông và phần còn lại
+        String[] parts = message.split(" ", 2);
 
-            // Tạo phần văn bản cho số trong ngoặc vuông
-            Text part1 = new Text(parts[0] + " "); // Đây là [16]
-            part1.setFill(Color.RED); // Đặt màu đỏ cho phần này
+        // Tạo phần văn bản cho số trong ngoặc vuông
+        Text part1 = new Text(parts[0] + " "); // Đây là [16]
+        part1.setFill(Color.RED); // Đặt màu đỏ cho phần này
+        part1.setFont(Font.font("System", FontWeight.BOLD, 15)); // Đặt cỡ chữ 15 và in đậm
+
+        // Tạo phần văn bản cho phần còn lại
+        Text part2 = new Text(parts.length > 1 ? parts[1] : ""); // Đây là abc đang online
+        part2.setFill(Color.BLACK); // Đặt màu đen cho phần này
+        part2.setFont(Font.font(15)); // Đặt cỡ chữ 15
+
+        // Tạo một TextFlow để chứa các phần văn bản
+        TextFlow textFlow = new TextFlow(part1, part2);
+
+        // Thêm TextFlow vào VBox
+        Platform.runLater(() -> {
+            messageContainer.getChildren().add(textFlow);
+        });
+    } else {
+        // Tách thông điệp thành hai phần nếu có dấu ':'
+        String[] messageSplit = message.split(":", 2);
+        if (messageSplit.length > 1) {
+            // Tạo phần văn bản cho phần đầu tiên
+            Text part1 = new Text(messageSplit[0] + ":"); // Ví dụ: "Server:"
+            part1.setFill(Color.RED); // Đặt màu đỏ cho phần đầu
             part1.setFont(Font.font("System", FontWeight.BOLD, 15)); // Đặt cỡ chữ 15 và in đậm
 
             // Tạo phần văn bản cho phần còn lại
-            Text part2 = new Text(parts.length > 1 ? parts[1] : ""); // Đây là abc đang online
-            part2.setFill(Color.BLACK); // Đặt màu đen cho phần này
+            Text part2 = new Text(messageSplit[1]);
+            part2.setFill(Color.BLACK); // Đặt màu đen cho phần còn lại
             part2.setFont(Font.font(15)); // Đặt cỡ chữ 15
 
             // Tạo một TextFlow để chứa các phần văn bản
@@ -167,37 +253,23 @@ public class AdminController implements Runnable{
                 messageContainer.getChildren().add(textFlow);
             });
         } else {
-            // Tách thông điệp thành hai phần nếu có dấu ':'
-            String[] messageSplit = message.split(":", 2);
-            if (messageSplit.length > 1) {
-                // Tạo phần văn bản cho phần đầu tiên
-                Text part1 = new Text(messageSplit[0] + ":"); // Ví dụ: "Server:"
-                part1.setFill(Color.RED); // Đặt màu đỏ cho phần đầu
-                part1.setFont(Font.font("System", FontWeight.BOLD, 15)); // Đặt cỡ chữ 15 và in đậm
-
-                // Tạo phần văn bản cho phần còn lại
-                Text part2 = new Text(messageSplit[1]);
-                part2.setFill(Color.BLACK); // Đặt màu đen cho phần còn lại
-                part2.setFont(Font.font(15)); // Đặt cỡ chữ 15
-
-                // Tạo một TextFlow để chứa các phần văn bản
-                TextFlow textFlow = new TextFlow(part1, part2);
-
-                // Thêm TextFlow vào VBox
-                Platform.runLater(() -> {
-                    messageContainer.getChildren().add(textFlow);
-                });
-            } else {
-                // Nếu không có phần nào được tách ra, thêm toàn bộ thông điệp
-                Platform.runLater(() -> {
-                    Text fullMessage = new Text(message);
-                    fullMessage.setFill(Color.BLACK);
-                    fullMessage.setFont(Font.font(15));
-                    messageContainer.getChildren().add(fullMessage);
-                });
-            }
+            // Nếu không có phần nào được tách ra, thêm toàn bộ thông điệp
+            Platform.runLater(() -> {
+                Text fullMessage = new Text(message);
+                fullMessage.setFill(Color.BLACK);
+                fullMessage.setFont(Font.font(15));
+                messageContainer.getChildren().add(fullMessage);
+            });
         }
     }
+}
+
+    // Phương thức cuộn đến cuối của ScrollPane
+    private void scrollToBottom() {
+        // Giả sử bạn có một ScrollPane với fx:id là scrollPane
+        messageScrollPane.setVvalue(1.0);
+    }
+
 
 
 
@@ -207,6 +279,6 @@ public class AdminController implements Runnable{
     }
     @FXML
     public void initialize() {
-
+        assert messageScrollPane != null : "messageScrollPane was not injected";
     }
 }

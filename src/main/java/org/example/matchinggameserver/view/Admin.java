@@ -318,10 +318,10 @@ public class Admin extends javax.swing.JFrame implements Runnable {
         String message = noticeTextField.getText();
         if (message.isEmpty()) return;
         String temp = messageView.getText();
-        temp += "Thông báo từ máy chủ : " + message + "\n";
+        temp += "Server : " + message + "\n";
         messageView.setText(temp);
         messageView.setCaretPosition(messageView.getDocument().getLength());
-        Server.serverThreadBus.boardCast(-1, "chat-server,Thông báo từ máy chủ : " + message);
+        Server.serverThreadBus.boardCast(-1, "chat-server,Server : " + message);
         noticeTextField.setText("");
     }
 
