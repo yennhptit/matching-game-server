@@ -23,6 +23,7 @@ public class ServerThread implements Runnable {
     private final String clientIP;
     private AdminController adminController;
     private ArrayList<Invitation> invitationList;
+    private boolean isFindingMatch;
 
     public ServerThread(Socket socketOfServer, int clientNumber) {
         this.socketOfServer = socketOfServer;
@@ -73,6 +74,16 @@ public class ServerThread implements Runnable {
     public String getClientIP() {
         return clientIP;
     }
+    
+    public boolean getIsFindingMatch()
+    {
+    	return isFindingMatch;
+    }
+    
+    public void setIsFindingMatch(boolean value)
+    {
+    	isFindingMatch = value;
+    }
 
     public String getStringFromUser(User user1) {
         return user1.getID() + "," + user1.getUsername()
@@ -107,6 +118,7 @@ public class ServerThread implements Runnable {
                 }
                 String[] messageSplit = message.split(",");
                 System.out.println("messageSplit[0]: " + messageSplit[0]);
+                
                 //Xác minh
                 if (messageSplit[0].equals("client-verify")) {
                     System.out.println(message);
@@ -146,6 +158,7 @@ public class ServerThread implements Runnable {
                     int id = Integer.parseInt(messageSplit[1]);
                     User u = userDAO.getbyID(id);
                     removeAllInvitationsAsSenderAndReceiver();
+                    isFindingMatch = false;
 //                    userDAO.updateToOffline(this.user.getID());
                     userDAO.updateToOffline(id);
 //                    Server.admin.addMessage("[" + user.getID() + "] " + user.getUsername() + " đã offline");
@@ -388,10 +401,7 @@ public class ServerThread implements Runnable {
                 	else
                 	{
                 		ServerThread st = Server.serverThreadBus.getServerThreadByUserID(senderID);
-                		room = new Room(this);
-                		room.setUser2(st);
-                		write("start-match," + senderID);
-                		Server.serverThreadBus.boardCast(senderID, "start-match," + user.getID());
+                		startMatch(st, this);
                 	}
                 	removeInvitation(senderID);
                 }
@@ -399,6 +409,24 @@ public class ServerThread implements Runnable {
                 {
                 	int senderID = Integer.parseInt(messageSplit[1]);User sender = Server.serverThreadBus.getServerThreadByUserID(senderID).user;
                 	removeInvitation(senderID);
+                }
+                if(messageSplit[0].equals("start-finding-match"))
+                {
+                	isFindingMatch = true;
+                	System.out.println(user.getUsername() + " is finding match");
+                	for(ServerThread st : Server.serverThreadBus.getListServerThreads())
+                	{
+                		if(st.getUser().getID() != user.getID() && st.getIsFindingMatch())
+                		{
+                			startMatch(this, st);
+                			break;
+                		}
+                	}
+                }
+                if(messageSplit[0].equals("cancel-finding-match"))
+                {
+                	isFindingMatch = false;
+                	System.out.println(user.getUsername() + " cancel finding match");
                 }
             }
         } catch (IOException e) {
@@ -476,13 +504,29 @@ public class ServerThread implements Runnable {
     	return false;
     }
     
-    private void removeAllInvitationsAsSenderAndReceiver()
+    private void startMatch(ServerThread sender, ServerThread receiver)
+    {
+		try {
+			receiver.setIsFindingMatch(false);
+			sender.setIsFindingMatch(false);
+			receiver.removeAllInvitationsAsSenderAndReceiver();
+			sender.removeAllInvitationsAsSenderAndReceiver();
+			room = new Room(sender);
+			room.setUser2(receiver);
+			receiver.write("start-match," + sender.getUser().getID());
+			sender.write("start-match," + receiver.getUser().getID());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    public void removeAllInvitationsAsSenderAndReceiver()
     {
     	invitationList.clear();
     	removeAllInvitationsAsSender();
     }
     
-    public void removeAllInvitationsAsSender()
+    private void removeAllInvitationsAsSender()
     {
     	for(ServerThread st : Server.serverThreadBus.getListServerThreads())
     	{
