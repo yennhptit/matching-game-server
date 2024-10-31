@@ -2,10 +2,12 @@ package org.example.matchinggameserver.controller;
 
 import org.example.matchinggameserver.MainApp;
 import org.example.matchinggameserver.dao.UserDAO;
+import org.example.matchinggameserver.model.Invitation;
 import org.example.matchinggameserver.model.User;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ServerThread implements Runnable {
@@ -20,6 +22,7 @@ public class ServerThread implements Runnable {
     private final UserDAO userDAO;
     private final String clientIP;
     private AdminController adminController;
+    private ArrayList<Invitation> invitationList;
 
     public ServerThread(Socket socketOfServer, int clientNumber) {
         this.socketOfServer = socketOfServer;
@@ -29,6 +32,7 @@ public class ServerThread implements Runnable {
         isClosed = false;
         room = null;
         adminController = new AdminController();
+        invitationList = new ArrayList<>();
 
         if (this.socketOfServer.getInetAddress().getHostAddress().equals("127.0.0.1")) {
             clientIP = "127.0.0.1";
@@ -141,6 +145,7 @@ public class ServerThread implements Runnable {
                     System.out.println(messageSplit[1]);
                     int id = Integer.parseInt(messageSplit[1]);
                     User u = userDAO.getbyID(id);
+                    removeAllInvitationsAsSenderAndReceiver();
 //                    userDAO.updateToOffline(this.user.getID());
                     userDAO.updateToOffline(id);
 //                    Server.admin.addMessage("[" + user.getID() + "] " + user.getUsername() + " đã offline");
@@ -366,6 +371,35 @@ public class ServerThread implements Runnable {
                         this.room = null;
                     }
                 }
+                if(messageSplit[0].equals("invite"))
+                {
+                	int receiverID = Integer.parseInt(messageSplit[1]);
+                	ServerThread receiverThread = Server.serverThreadBus.getServerThreadByUserID(receiverID);
+                	receiverThread.insertInvitation(user);
+                }
+                if(messageSplit[0].equals("accept-invitation"))
+                {
+                	int senderID = Integer.parseInt(messageSplit[1]);
+                	User sender = Server.serverThreadBus.getServerThreadByUserID(senderID).user;
+                	if(!invitationExistedCheck(sender))
+                	{
+                		write("invitation-unavailable," + senderID);
+                	}
+                	else
+                	{
+                		ServerThread st = Server.serverThreadBus.getServerThreadByUserID(senderID);
+                		room = new Room(this);
+                		room.setUser2(st);
+                		write("start-match," + senderID);
+                		Server.serverThreadBus.boardCast(senderID, "start-match," + user.getID());
+                	}
+                	removeInvitation(senderID);
+                }
+                if(messageSplit[0].equals("decline-invitation"))
+                {
+                	int senderID = Integer.parseInt(messageSplit[1]);User sender = Server.serverThreadBus.getServerThreadByUserID(senderID).user;
+                	removeInvitation(senderID);
+                }
             }
         } catch (IOException e) {
             //Thay đổi giá trị cờ để thoát luồng
@@ -397,6 +431,63 @@ public class ServerThread implements Runnable {
             }
 
         }
+    }
+    
+    public void removeInvitation(int senderID)
+    {
+    	try {
+			write("remove-invitation," + senderID);
+			for(Invitation i : invitationList)
+			{
+				if(i.getSenderID() == senderID)
+				{
+					invitationList.remove(i);
+					break;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    public void insertInvitation(User sender)
+    {
+    	if(!invitationExistedCheck(sender))
+    	{    		
+    		try {
+    			Invitation inv = new Invitation(sender, this);
+    			invitationList.add(inv);
+				write("add-invitation," + sender.getID());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    }
+    
+    private boolean invitationExistedCheck(User sender)
+    {
+    	for(Invitation inv : invitationList)
+    	{
+    		if(inv.getSenderID() == sender.getID())
+    		{
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    private void removeAllInvitationsAsSenderAndReceiver()
+    {
+    	invitationList.clear();
+    	removeAllInvitationsAsSender();
+    }
+    
+    public void removeAllInvitationsAsSender()
+    {
+    	for(ServerThread st : Server.serverThreadBus.getListServerThreads())
+    	{
+    		st.removeInvitation(user.getID());
+    	}
     }
 
     public void write(String message) throws IOException {
