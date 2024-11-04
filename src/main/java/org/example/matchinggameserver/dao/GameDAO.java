@@ -2,6 +2,7 @@ package org.example.matchinggameserver.dao;
 
 import org.example.matchinggameserver.model.Card;
 import org.example.matchinggameserver.model.Match;
+import org.example.matchinggameserver.model.MatchHistory;
 
 import java.sql.*;
 import java.time.Instant;
@@ -263,6 +264,97 @@ public class GameDAO extends DAO{
         return matchId;
     }
 
+    public List<MatchHistory> getHistory(int userId) {
+        List<MatchHistory> historyList = new ArrayList<>();
+        String sql = "SELECT * FROM `match` WHERE player1_id = ? OR player2_id = ?";
+
+        try (PreparedStatement preparedStatement = con.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, userId);
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            while (rs.next()) {
+                Long matchId = rs.getLong("id");
+                Long player1Id = rs.getLong("player1_id");
+                Long player2Id = rs.getLong("player2_id");
+                Long player1Score = rs.getLong("player1_score");
+                Long player2Score = rs.getLong("player2_score");
+                LocalDateTime createdAt = rs.getTimestamp("created_at").toLocalDateTime();
+
+                String result;
+                int pointsEarned;
+
+                // Determine the result and pointsEarned
+                if ((userId == player1Id && player1Score > player2Score) ||
+                        (userId == player2Id && player2Score > player1Score)) {
+                    result = "win";
+                    pointsEarned = 1;
+                } else if (player1Score.equals(player2Score)) {
+                    result = "draw";
+                    pointsEarned = 0;
+                } else {
+                    result = "lose";
+                    pointsEarned = -1;
+                }
+
+                MatchHistory matchHistory = new MatchHistory((long) userId, matchId, result, pointsEarned, createdAt);
+                historyList.add(matchHistory);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return historyList;
+    }
+
+    public List<MatchHistory> getHistoryOpponent(int userId, int opponentId) {
+        List<MatchHistory> historyList = new ArrayList<>();
+        String sql = "SELECT * FROM `match` WHERE (player1_id = ? AND player2_id = ?) OR (player1_id = ? AND player2_id = ?)";
+
+        try (PreparedStatement preparedStatement = con.prepareStatement(sql)) {
+            // Set parameters for userId and opponentId in both possible player positions
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, opponentId);
+            preparedStatement.setInt(3, opponentId);
+            preparedStatement.setInt(4, userId);
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            while (rs.next()) {
+                Long matchId = rs.getLong("id");
+                Long player1Id = rs.getLong("player1_id");
+                Long player2Id = rs.getLong("player2_id");
+                Long player1Score = rs.getLong("player1_score");
+                Long player2Score = rs.getLong("player2_score");
+                LocalDateTime createdAt = rs.getTimestamp("created_at").toLocalDateTime();
+
+                String result;
+                int pointsEarned;
+
+                // Determine the result and pointsEarned based on the scores and userId
+                if ((userId == player1Id && player1Score > player2Score) ||
+                        (userId == player2Id && player2Score > player1Score)) {
+                    result = "win";
+                    pointsEarned = 1;
+                } else if (player1Score.equals(player2Score)) {
+                    result = "draw";
+                    pointsEarned = 0;
+                } else {
+                    result = "lose";
+                    pointsEarned = -1;
+                }
+
+                // Add match history record for the user
+                MatchHistory matchHistory = new MatchHistory((long) userId, matchId, result, pointsEarned, createdAt);
+                historyList.add(matchHistory);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return historyList;
+    }
     public List<Card> getListRandomCard(int num){
         List<Card> cards = new ArrayList<>();
         String sql = "SELECT * FROM card ORDER BY RAND() LIMIT ?";

@@ -5,12 +5,14 @@ import org.example.matchinggameserver.dao.GameDAO;
 import org.example.matchinggameserver.dao.UserDAO;
 import org.example.matchinggameserver.model.Invitation;
 import org.example.matchinggameserver.model.Match;
+import org.example.matchinggameserver.model.MatchHistory;
 import org.example.matchinggameserver.model.User;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ServerThread implements Runnable {
 
@@ -458,6 +460,26 @@ public class ServerThread implements Runnable {
                     String winnerId = match1.getWinnerId() != null ? match1.getWinnerId().toString() : null;
                     write("get-result," + messageSplit[1] + "," + messageSplit[2] + "," + messageSplit[3] + "," + winnerId);
                     System.out.println(message);
+                }
+                if(messageSplit[0].equals("history-to-home"))
+                {
+                    write("home-to-history-success");
+                }
+                if(messageSplit[0].equals("show-histoy"))
+                {
+                    List<MatchHistory> matchHistories = gameDAO.getHistory(Integer.parseInt(messageSplit[1]));
+                    String matchHistoryStr = matchHistories.stream()
+                        .map(MatchHistory::toString)
+                        .collect(Collectors.joining(", "));
+                    write("get-history," + messageSplit[1] + "," + matchHistoryStr);
+                }
+                if(messageSplit[0].equals("show-histoy-popup"))
+                {
+                    List<MatchHistory> matchHistories = gameDAO.getHistoryOpponent(Integer.parseInt(messageSplit[1]), Integer.parseInt(messageSplit[2]));
+                    String matchHistoryStr = matchHistories.stream()
+                            .map(MatchHistory::toString)
+                            .collect(Collectors.joining(", "));
+                    write("get-history-popup," + messageSplit[1] + "," + matchHistoryStr);
                 }
                 if(messageSplit[0].equals("end-match-exit"))
                 {

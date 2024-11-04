@@ -5,17 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0aed576e-0731-4529-a2c1-6f1f6a111a25" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/dao/GameDAO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/model/Card.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/model/Match.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/sql/V1_create_db.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/model/MatchHistory.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/controller/ServerThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/controller/ServerThread.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/dao/DAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/dao/DAO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/dao/GameDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/dao/GameDAO.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +49,7 @@
   &quot;keyToString&quot;: {
     &quot;Application.AdminDashboard.executor&quot;: &quot;Run&quot;,
     &quot;Application.HelloApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Application.MainApp.executor&quot;: &quot;Run&quot;,
+    &quot;Application.MainApp.executor&quot;: &quot;Debug&quot;,
     &quot;Application.Server.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;u2&quot;,
@@ -125,7 +118,10 @@
       <updated>1729780122195</updated>
       <workItem from="1730549496205" duration="27371000" />
       <workItem from="1730631801189" duration="31631000" />
-      <workItem from="1730699494541" duration="317000" />
+      <workItem from="1730699494541" duration="650000" />
+      <workItem from="1730702396832" duration="25000" />
+      <workItem from="1730718819390" duration="1418000" />
+      <workItem from="1730736597952" duration="5634000" />
     </task>
     <servers />
   </component>
