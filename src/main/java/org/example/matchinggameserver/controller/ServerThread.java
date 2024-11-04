@@ -1,8 +1,10 @@
 package org.example.matchinggameserver.controller;
 
 import org.example.matchinggameserver.MainApp;
+import org.example.matchinggameserver.dao.GameDAO;
 import org.example.matchinggameserver.dao.UserDAO;
 import org.example.matchinggameserver.model.Invitation;
+import org.example.matchinggameserver.model.Match;
 import org.example.matchinggameserver.model.User;
 
 import java.io.*;
@@ -19,7 +21,9 @@ public class ServerThread implements Runnable {
     private BufferedWriter os;
     private boolean isClosed;
     private Room room;
+    private Match match;
     private final UserDAO userDAO;
+    private final GameDAO gameDAO;
     private final String clientIP;
     private AdminController adminController;
     private ArrayList<Invitation> invitationList;
@@ -30,11 +34,12 @@ public class ServerThread implements Runnable {
         this.clientNumber = clientNumber;
         System.out.println("Server thread number " + clientNumber + " Started");
         userDAO = new UserDAO();
+        gameDAO = new GameDAO();
         isClosed = false;
         room = null;
         adminController = new AdminController();
         invitationList = new ArrayList<>();
-
+        match = null;
         if (this.socketOfServer.getInetAddress().getHostAddress().equals("127.0.0.1")) {
             clientIP = "127.0.0.1";
         } else {
@@ -423,10 +428,53 @@ public class ServerThread implements Runnable {
                 		}
                 	}
                 }
+
                 if(messageSplit[0].equals("cancel-finding-match"))
                 {
                 	isFindingMatch = false;
                 	System.out.println(user.getUsername() + " cancel finding match");
+                }
+                if(messageSplit[0].equals("card-flip")){
+                    for(ServerThread st : Server.serverThreadBus.getListServerThreads())
+                    {
+                        if(st.getUser().getID() == Long.parseLong(messageSplit[2]))
+                        {
+                            Match match1 = gameDAO.updateUserPoint(Long.parseLong(messageSplit[1]) , Integer.parseInt(messageSplit[2]), Boolean.valueOf(messageSplit[4]));
+                            ServerThread opponent = Server.serverThreadBus.getServerThreadByUserID(Integer.parseInt(messageSplit[3]));
+                            opponent.write("update-opponent-point," + Long.parseLong(messageSplit[1])  + "," + messageSplit[3]);
+                            if(match1.getScore1() >= 10 || match1.getScore2() >= 10){
+                                Integer winnerId = match1.getWinnerId() == null ? null : match1.getWinnerId();
+                                write("get-result," + Long.parseLong(messageSplit[1]) + "," + messageSplit[2] + "," + messageSplit[3] + "," + winnerId);
+                                opponent.write("get-result," + Long.parseLong(messageSplit[1]) + "," + messageSplit[3] + "," + messageSplit[2] + "," + winnerId);
+                            }
+                            break;
+                        }
+                    }
+                    System.out.println(message);
+                }
+                if(messageSplit[0].equals("end-game"))
+                {
+                    Match match1 = gameDAO.getMatchById(Long.parseLong(messageSplit[1]));
+                    String winnerId = match1.getWinnerId() != null ? match1.getWinnerId().toString() : null;
+                    write("get-result," + messageSplit[1] + "," + messageSplit[2] + "," + messageSplit[3] + "," + winnerId);
+                    System.out.println(message);
+                }
+                if(messageSplit[0].equals("end-match-exit"))
+                {
+                    write("end-match-exit-success," + messageSplit[2]);
+                    Match match1 = gameDAO.updateAndGetMatchById(Long.parseLong(messageSplit[1]), Integer.parseInt(messageSplit[4]));
+                    String winnerId = match1.getWinnerId() != null ? match1.getWinnerId().toString() : null;
+                    for(ServerThread st : Server.serverThreadBus.getListServerThreads())
+                    {
+                        if(st.getUser().getID() == Integer.parseInt(messageSplit[2]))
+                        {
+                            ServerThread opponent = Server.serverThreadBus.getServerThreadByUserID(Integer.parseInt(messageSplit[3]));
+                            opponent.write("get-result," + messageSplit[1]  + "," + messageSplit[3] + "," + messageSplit[2] + "," + winnerId);
+                            break;
+                        }
+                    }
+//                    write("get-result," + messageSplit[1] + "," + messageSplit[2] + "," + messageSplit[3] + "," + winnerId);
+                    System.out.println(message);
                 }
             }
         } catch (IOException e) {
@@ -513,8 +561,16 @@ public class ServerThread implements Runnable {
 			sender.removeAllInvitationsAsSenderAndReceiver();
 			room = new Room(sender);
 			room.setUser2(receiver);
-			receiver.write("start-match," + sender.getUser().getID());
-			sender.write("start-match," + receiver.getUser().getID());
+            Match match = new Match(sender.getUser(), receiver.getUser());
+            Long matchId = gameDAO.create(sender.getUser().getID(), receiver.getUser().getID());
+//            user.setMatchId(matchId);
+            match.setId(matchId);
+            this.match = match;
+            receiver.write(match.toStringPlayer1());
+            sender.write(match.toStringPlayer2());
+            System.out.println("set up matchId success : " + match.getId());
+//            receiver.write("start-match," + sender.getUser().getID());
+//            sender.write("start-match," + receiver.getUser().getID());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

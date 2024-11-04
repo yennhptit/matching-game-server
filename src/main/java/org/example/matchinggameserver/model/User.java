@@ -11,7 +11,7 @@ public class User {
     private boolean isPlaying;
     private int star;
     private int rank;
-
+    private Long matchId;
 
 
     public User(int ID, String username, String password, int numberOfGame, int numberOfWin, int numberOfDraw, boolean isOnline, boolean isPlaying, int star, int rank) {
@@ -25,6 +25,7 @@ public class User {
         this.isPlaying = isPlaying;
         this.star = star;
         this.rank = rank;
+        this.matchId = null;
     }
 
     public User() {
@@ -154,5 +155,13 @@ public class User {
                 ", star=" + star +
                 ", rank=" + rank +
                 '}';
+    }
+
+    public Long getMatchId() {
+        return matchId;
+    }
+
+    public void setMatchId(Long matchId) {
+        this.matchId = matchId;
     }
 }
