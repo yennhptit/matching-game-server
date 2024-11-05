@@ -466,6 +466,7 @@ public class ServerThread implements Runnable {
                 }
                 if(messageSplit[0].equals("end-game"))
                 {
+                	room = null;
                     Match match1 = gameDAO.getMatchById(Long.parseLong(messageSplit[1]));
                     String winnerId = match1.getWinnerId() != null ? match1.getWinnerId().toString() : null;
                     write("get-result," + messageSplit[1] + "," + messageSplit[2] + "," + messageSplit[3] + "," + winnerId);
@@ -493,6 +494,8 @@ public class ServerThread implements Runnable {
                 }
                 if(messageSplit[0].equals("end-match-exit"))
                 {
+                	room.getCompetitor(clientNumber).setRoom(null);
+                	room = null;
                     write("end-match-exit-success," + messageSplit[2]);
                     Match match1 = gameDAO.updateAndGetMatchById(Long.parseLong(messageSplit[1]), Integer.parseInt(messageSplit[4]));
                     String winnerId = match1.getWinnerId() != null ? match1.getWinnerId().toString() : null;
@@ -626,6 +629,8 @@ public class ServerThread implements Runnable {
 			sender.removeAllInvitationsAsSenderAndReceiver();
 			room = new Room(sender);
 			room.setUser2(receiver);
+			sender.setRoom(room);
+			receiver.setRoom(room);
             Match match = new Match(sender.getUser(), receiver.getUser());
             Long matchId = gameDAO.create(sender.getUser().getID(), receiver.getUser().getID());
 //            user.setMatchId(matchId);
