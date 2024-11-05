@@ -42,8 +42,8 @@ public class ServerThread implements Runnable {
         adminController = new AdminController();
         invitationList = new ArrayList<>();
         match = null;
-        if (this.socketOfServer.getInetAddress().getHostAddress().equals("127.0.0.1")) {
-            clientIP = "127.0.0.1";
+        if (this.socketOfServer.getInetAddress().getHostAddress().equals("26.150.7.239")) {
+            clientIP = "26.150.7.239";
         } else {
             clientIP = this.socketOfServer.getInetAddress().getHostAddress();
         }
@@ -193,9 +193,10 @@ public class ServerThread implements Runnable {
                 }
                 //Xử lý chat toàn server
                 if (messageSplit[0].equals("chat-server")) {
-                    adminController.addMessage("[" + user.getID() + "] " + user.getUsername() + " : " + messageSplit[1]);
+                    String[] messageSplitTemp = message.split(",", 2);
+                    adminController.addMessage("[" + user.getID() + "] " + user.getUsername() + " : " + messageSplitTemp[1]);
 
-                    Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getUsername() + ": " + messageSplit[1]);
+                    Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getUsername() + ": " + messageSplitTemp[1]);
 
 
 
@@ -429,7 +430,7 @@ public class ServerThread implements Runnable {
                 if(messageSplit[0].equals("start-finding-match"))
                 {
                 	isFindingMatch = true;
-                	System.out.println(user.getUsername() + " is finding match");
+              	    System.out.println(user.getUsername() + " is finding match");
                 	for(ServerThread st : Server.serverThreadBus.getListServerThreads())
                 	{
                 		if(st.getUser().getID() != user.getID() && st.getIsFindingMatch())

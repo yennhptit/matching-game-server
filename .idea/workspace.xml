@@ -5,8 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0aed576e-0731-4529-a2c1-6f1f6a111a25" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/dao/MessageDAO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/model/Message.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/controller/ServerThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/matchinggameserver/controller/ServerThread.java" afterDir="false" />
     </list>
@@ -52,10 +50,10 @@
     "Application.MainApp.executor": "Run",
     "Application.Server.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "u2",
+    "git-widget-placeholder": "yen0511",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "E:/ltm_client",
+    "last_opened_file_path": "E:/ltm-server",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
