@@ -2,11 +2,9 @@ package org.example.matchinggameserver.controller;
 
 import org.example.matchinggameserver.MainApp;
 import org.example.matchinggameserver.dao.GameDAO;
+import org.example.matchinggameserver.dao.MessageDAO;
 import org.example.matchinggameserver.dao.UserDAO;
-import org.example.matchinggameserver.model.Invitation;
-import org.example.matchinggameserver.model.Match;
-import org.example.matchinggameserver.model.MatchHistory;
-import org.example.matchinggameserver.model.User;
+import org.example.matchinggameserver.model.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -30,6 +28,7 @@ public class ServerThread implements Runnable {
     private AdminController adminController;
     private ArrayList<Invitation> invitationList;
     private boolean isFindingMatch;
+    private final MessageDAO messageDAO;
 
     public ServerThread(Socket socketOfServer, int clientNumber) {
         this.socketOfServer = socketOfServer;
@@ -37,6 +36,7 @@ public class ServerThread implements Runnable {
         System.out.println("Server thread number " + clientNumber + " Started");
         userDAO = new UserDAO();
         gameDAO = new GameDAO();
+        messageDAO = new MessageDAO();
         isClosed = false;
         room = null;
         adminController = new AdminController();
@@ -106,6 +106,11 @@ public class ServerThread implements Runnable {
     public void goToPartnerRoom() throws IOException {
         write("go-to-room," + room.getId() + "," + room.getCompetitor(this.getClientNumber()).getClientIP() + ",0," + getStringFromUser(room.getCompetitor(this.getClientNumber()).getUser()));
         room.getCompetitor(this.clientNumber).write("go-to-room," + room.getId() + "," + this.clientIP + ",1," + getStringFromUser(user));
+    }
+    public String getStringFromMessage(Message message)
+    {
+        return message.getId() + "," + message.getSenderId() + "," + message.getReceiverId() + "," + message.getContent() + "," + message.getTimestamp()
+                + "," + message.getType();
     }
 
     @Override
@@ -190,7 +195,11 @@ public class ServerThread implements Runnable {
                 if (messageSplit[0].equals("chat-server")) {
                     adminController.addMessage("[" + user.getID() + "] " + user.getUsername() + " : " + messageSplit[1]);
 
-                    Server.serverThreadBus.boardCast(clientNumber, messageSplit[0] + "," + user.getUsername() + " : " + messageSplit[1]);
+                    Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getUsername() + ": " + messageSplit[1]);
+
+
+
+//                    Server.serverThreadBus.boardCast(clientNumber, messageSplit[0] + "," + user.getUsername() + " : " + messageSplit[1]);
 //                    Server.admin.addMessage("[" + user.getID() + "] " + user.getUsername() + " : " + messageSplit[1]);
                 }
                 //Xử lý vào phòng trong chức năng tìm kiếm phòng
@@ -498,6 +507,39 @@ public class ServerThread implements Runnable {
 //                    write("get-result," + messageSplit[1] + "," + messageSplit[2] + "," + messageSplit[3] + "," + winnerId);
                     System.out.println(message);
                 }
+                if(messageSplit[0].equals("send-message-to-user"))
+                {
+                    String[] messageSplitTemp = message.split(",", 5);
+
+                    String type = messageSplitTemp[1];
+                    String senderId = messageSplitTemp[2]; // User ID của người gửi
+                    String receiverId = messageSplitTemp[3]; // User ID của người nhận
+                    String messageContent = messageSplitTemp[4]; // Nội dung tin nhắn
+                    sendMessageToUser(type, receiverId, senderId, messageContent);
+
+                }
+                if(messageSplit[0].equals("get-list-message"))
+                {
+                    int u1 = Integer.parseInt(messageSplit[1]);
+                    int u2 = Integer.parseInt(messageSplit[2]);
+                    List<Message> messageList = messageDAO.getMessages(u1, u2);
+                    StringBuilder res = new StringBuilder("return-get-list-message," + u1 + "," + u2 + ",");
+                    for (Message message1 : messageList) {
+                        res.append(getStringFromMessage(message1)).append(",");
+                    }
+                    System.out.println("check: " + res.toString());
+                    write(res.toString());
+                }
+                if(messageSplit[0].equals("get-last-message"))
+                {
+                    int u1 = Integer.parseInt(messageSplit[1]);
+                    List<Message> messageList = messageDAO.getLastMessagesForUser(u1);
+                    StringBuilder res = new StringBuilder("return-get-last-message,");
+                    for (Message message1 : messageList) {
+                        res.append(getStringFromMessage(message1)).append(",");
+                    }
+                    write(res.toString());
+                }
             }
         } catch (IOException e) {
             //Thay đổi giá trị cờ để thoát luồng
@@ -506,9 +548,9 @@ public class ServerThread implements Runnable {
             if (this.user != null) {
                 userDAO.updateToOffline(this.user.getID());
                 userDAO.updateToNotPlaying(this.user.getID());
-                adminController.addMessage("[" + user.getID() + "] " + user.getUsername() + " đã offline");
+                adminController.addMessage("[" + user.getID() + "] " + user.getUsername() + ": đã offline");
 
-                Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getUsername() + " đã offline");
+                Server.serverThreadBus.boardCast(clientNumber, "chat-server," + this.user.getUsername() + ": đã offline");
 //                Server.admin.addMessage("[" + user.getID() + "] " + user.getUsername() + " đã offline");
             }
 
@@ -617,5 +659,27 @@ public class ServerThread implements Runnable {
         os.newLine();
         os.flush();
         System.out.println(message + " send thành công");
+    }
+    public void sendMessageToUser(String type, String receiverId, String senderId, String messageContent) {
+        ServerThread receiverThread = Server.serverThreadBus.getServerThreadByUserID(Integer.parseInt(receiverId));
+//        System.out.println("receive id " + receiverId);
+
+        if (receiverThread != null) {
+            try {
+                // Nếu người nhận đang online, gửi tin nhắn
+                receiverThread.write("receive-message-from-user," + type + "," + senderId + "," + messageContent);
+                messageDAO.sendMessage(Integer.parseInt(senderId), Integer.parseInt(receiverId), messageContent, type);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Nếu người nhận không online, lưu tin nhắn vào cơ sở dữ liệu
+            try {
+                messageDAO.sendMessage(Integer.parseInt(senderId), Integer.parseInt(receiverId), messageContent, type);
+                System.out.println("User " + receiverId + " is offline. Message saved to database.");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
