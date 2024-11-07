@@ -73,8 +73,10 @@ public class GameDAO extends DAO{
                             winnerStatement.setLong(2, matchId);
                             winnerStatement.executeUpdate();
                         }
-
                         updatedMatch.setWinnerId(winnerId);
+//                        int starIncrement = 2;
+//                        updateStar(winnerId, starIncrement);
+
                         // Thêm lịch sử trận đấu cho cả hai người chơi vào bảng `match_history`
                         insertMatchHistory(player1Id, matchId, winnerId == player1Id ? "Win" : "Lose", player1Score);
                         insertMatchHistory(player2Id, matchId, winnerId == player2Id ? "Win" : "Lose", player2Score);
@@ -114,7 +116,6 @@ public class GameDAO extends DAO{
         return updatedMatch; // Trả về đối tượng Match đã cập nhật
     }
 
-
     public Match getMatchById(Long matchId) {
         String query = "SELECT * FROM `match` WHERE id = ?";
         Match match = null;
@@ -141,6 +142,12 @@ public class GameDAO extends DAO{
                     match.setWinnerId(null);  // Hoà, không có người thắng
                 }
 
+                if(match.getWinnerId() == null){
+                    updateStar(rs.getInt("player1_id"), 1);
+                    updateStar(rs.getInt("player2_id"), 1);
+                }else{
+                    updateStar(match.getWinnerId(), 2);
+                }
                 // Cập nhật winner_id trong CSDL nếu cần
                 Long currentWinnerId = rs.getLong("winner_id");
                 if (match.getWinnerId() != null && !match.getWinnerId().equals(currentWinnerId)) {
@@ -154,6 +161,78 @@ public class GameDAO extends DAO{
         return match;
     }
 
+    public String updateStar(int userId, int starIncrement) {
+        String sql = "UPDATE `user` SET star = star + ? WHERE ID = ?";
+        String resultMessage = "User not found.";
+
+        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+            // Set parameters
+            pstmt.setInt(1, starIncrement); // Giá trị cần cộng thêm vào điểm sao hiện tại
+            pstmt.setInt(2, userId);
+
+            // Execute update
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                resultMessage = "Star updated successfully.";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            resultMessage = "Error updating star: " + e.getMessage();
+        }
+
+        return resultMessage;
+    }
+
+    public String getMatchStats(int userId1, int userId2) {
+        String sql = "SELECT " +
+                "   SUM(CASE WHEN winner_id = 0 THEN 1 ELSE 0 END) AS draws, " +
+                "   SUM(CASE WHEN winner_id = ? THEN 1 ELSE 0 END) AS wins, " +
+                "   SUM(CASE WHEN winner_id != ? AND winner_id != 0 THEN 1 ELSE 0 END) AS losses " +
+                "FROM `match` " +
+                "WHERE (player1_id = ? AND player2_id = ?) OR (player1_id = ? AND player2_id = ?)";
+        String result = "";
+        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+            pstmt.setInt(1, userId1);  // Thiết lập cho wins
+            pstmt.setInt(2, userId1);  // Thiết lập cho losses
+            pstmt.setInt(3, userId1);  // Thiết lập cho player1_id
+            pstmt.setInt(4, userId2);  // Thiết lập cho player2_id
+            pstmt.setInt(5, userId2);  // Thiết lập cho player1_id (trường hợp đảo ngược)
+            pstmt.setInt(6, userId1);  // Thiết lập cho player2_id (trường hợp đảo ngược)
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                int draws = rs.getInt("draws");
+                int wins = rs.getInt("wins");
+                int losses = rs.getInt("losses");
+                String name_star = getUserStar(userId2);
+                // Chuyển các giá trị thành chuỗi với dấu phẩy phân cách: star, wins, draws, loss
+                result = name_star + "," + wins + "," + draws + "," + losses;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+    public String getUserStar(int userId) {
+        String sql = "SELECT * FROM `user` WHERE ID = ?";
+        int star = -1; // Nếu không tìm thấy người dùng, trả về -1
+        String username = "";
+        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+            pstmt.setInt(1, userId); // Thực hiện truy vấn với userId
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                username = rs.getString("username");
+                star = rs.getInt("star"); // Lấy giá trị star từ kết quả truy vấn
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return username + "," +star;
+    }
     public Match updateAndGetMatchById(Long matchId, Integer winnerId) {
         String selectQuery = "SELECT * FROM `match` WHERE id = ?";
         String updateQuery = "UPDATE `match` SET winner_id = ?, updated_at = ? WHERE id = ?";
@@ -243,8 +322,9 @@ public class GameDAO extends DAO{
             // Set parameters
             pstmt.setLong(1, playerId1);
             pstmt.setLong(2, playerId2);
-            pstmt.setDate(3, Date.valueOf(LocalDate.now()));
-            pstmt.setDate(4, Date.valueOf(LocalDate.now()));
+            Timestamp currentTimestamp = Timestamp.valueOf(LocalDateTime.now());
+            pstmt.setTimestamp(3, currentTimestamp);
+            pstmt.setTimestamp(4, currentTimestamp);
 
             // Execute update
             int affectedRows = pstmt.executeUpdate();
@@ -281,21 +361,19 @@ public class GameDAO extends DAO{
                 Long player1Score = rs.getLong("player1_score");
                 Long player2Score = rs.getLong("player2_score");
                 LocalDateTime createdAt = rs.getTimestamp("created_at").toLocalDateTime();
-
-                String result;
-                int pointsEarned;
+                Long winnerId = rs.getLong("winner_id");
+                String result = "lose";
+                int pointsEarned = 0;
 
                 // Determine the result and pointsEarned
-                if ((userId == player1Id && player1Score > player2Score) ||
-                        (userId == player2Id && player2Score > player1Score)) {
-                    result = "win";
-                    pointsEarned = 1;
-                } else if (player1Score.equals(player2Score)) {
-                    result = "draw";
-                    pointsEarned = 0;
-                } else {
-                    result = "lose";
-                    pointsEarned = -1;
+                if (winnerId != null) {
+                    if (userId == winnerId){
+                        result = "win";
+                        pointsEarned = 2;
+                    } else if (player1Score.equals(player2Score)) {
+                        result = "draw";
+                        pointsEarned = 1;
+                    }
                 }
 
                 MatchHistory matchHistory = new MatchHistory((long) userId, matchId, result, pointsEarned, createdAt);

@@ -1,10 +1,10 @@
 USE `memory_game`;
-# CREATE TABLE `card` (
-#                         `id` INTEGER NOT NULL AUTO_INCREMENT UNIQUE,
-#                         `card_name` VARCHAR(255),
-#                         `image` VARCHAR(255),
-#                         PRIMARY KEY (`id`)
-# );
+CREATE TABLE `card` (
+                        `id` INTEGER NOT NULL AUTO_INCREMENT UNIQUE,
+                        `card_name` VARCHAR(255),
+                        `image` VARCHAR(255),
+                        PRIMARY KEY (`id`)
+);
 
 -- Tạo bảng `room` (thay ENUM bằng VARCHAR)
 # CREATE TABLE `room` (

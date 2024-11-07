@@ -42,8 +42,8 @@ public class ServerThread implements Runnable {
         adminController = new AdminController();
         invitationList = new ArrayList<>();
         match = null;
-        if (this.socketOfServer.getInetAddress().getHostAddress().equals("26.150.7.239")) {
-            clientIP = "26.150.7.239";
+        if (this.socketOfServer.getInetAddress().getHostAddress().equals("26.250.85.6")) {
+            clientIP = "26.250.85.6";
         } else {
             clientIP = this.socketOfServer.getInetAddress().getHostAddress();
         }
@@ -484,13 +484,10 @@ public class ServerThread implements Runnable {
                         .collect(Collectors.joining(", "));
                     write("get-history," + messageSplit[1] + "," + matchHistoryStr);
                 }
-                if(messageSplit[0].equals("show-histoy-popup"))
+                if(messageSplit[0].equals("show-history-popup"))
                 {
-                    List<MatchHistory> matchHistories = gameDAO.getHistoryOpponent(Integer.parseInt(messageSplit[1]), Integer.parseInt(messageSplit[2]));
-                    String matchHistoryStr = matchHistories.stream()
-                            .map(MatchHistory::toString)
-                            .collect(Collectors.joining(", "));
-                    write("get-history-popup," + messageSplit[1] + "," + matchHistoryStr);
+                    String result = gameDAO.getMatchStats(Integer.parseInt(messageSplit[1]), Integer.parseInt(messageSplit[2]));
+                    write("get-history-popup," + messageSplit[1]+ "," + messageSplit[2] + "," + result);
                 }
                 if(messageSplit[0].equals("end-match-exit"))
                 {
@@ -499,11 +496,13 @@ public class ServerThread implements Runnable {
                     write("end-match-exit-success," + messageSplit[2]);
                     Match match1 = gameDAO.updateAndGetMatchById(Long.parseLong(messageSplit[1]), Integer.parseInt(messageSplit[4]));
                     String winnerId = match1.getWinnerId() != null ? match1.getWinnerId().toString() : null;
+                    room = null;
                     for(ServerThread st : Server.serverThreadBus.getListServerThreads())
                     {
                         if(st.getUser().getID() == Integer.parseInt(messageSplit[2]))
                         {
                             ServerThread opponent = Server.serverThreadBus.getServerThreadByUserID(Integer.parseInt(messageSplit[3]));
+                            opponent.setRoom(null);
                             opponent.write("get-result," + messageSplit[1]  + "," + messageSplit[3] + "," + messageSplit[2] + "," + winnerId);
                             break;
                         }

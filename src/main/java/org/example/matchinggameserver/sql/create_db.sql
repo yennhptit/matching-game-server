@@ -5,12 +5,12 @@ CREATE TABLE `user`(
     ID int AUTO_INCREMENT PRIMARY KEY,
     `username` varchar(255) UNIQUE,
     `password` varchar(255),
-    numberOfGame int DEFAULT 0, //so van da choi
-    numberOfWin int DEFAULT 0,  //so van thang
-    numberOfDraw int DEFAULT 0, //so van hoa
+    numberOfGame int DEFAULT 0,
+    numberOfWin int DEFAULT 0,
+    numberOfDraw int DEFAULT 0,
     IsOnline int DEFAULT 0,
     IsPlaying int DEFAULT 0,
-    star int DEFAULT 0 // so sao
+    star int DEFAULT 0
 );
 CREATE TABLE friend(
     ID_User1 int NOT NULL,
