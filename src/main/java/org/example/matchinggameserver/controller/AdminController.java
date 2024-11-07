@@ -12,6 +12,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+
+import java.util.ArrayList;
+
 import org.example.matchinggameserver.dao.UserDAO;
 import org.example.matchinggameserver.view.Admin;
 
@@ -87,12 +90,18 @@ public class AdminController implements Runnable{
 //        roomListTextArea.clear();
 //        // Example data, replace this with your actual room fetching logic
 //        roomListTextArea.setText("Room A\nRoom B\nRoom C");
+    	ArrayList<Integer> roomIDs = new ArrayList<>();
         StringBuilder res = new StringBuilder();
         int i = 1;
         for (ServerThread serverThread : Server.serverThreadBus.getListServerThreads()) {
             Room room1 = serverThread.getRoom();
             String listUser = "List user ID: ";
             if (room1 != null) {
+            	if(roomIDs.contains(room1.getId()))
+            	{
+            		break;
+            	}
+            	roomIDs.add(room1.getId());
                 if (room1.getNumberOfUser() == 1) {
                     listUser += room1.getUser1().getUser().getID();
                 } else {
