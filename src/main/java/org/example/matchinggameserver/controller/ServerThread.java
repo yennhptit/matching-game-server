@@ -455,7 +455,11 @@ public class ServerThread implements Runnable {
                             ServerThread opponent = Server.serverThreadBus.getServerThreadByUserID(Integer.parseInt(messageSplit[3]));
                             opponent.write("update-opponent-point," + Long.parseLong(messageSplit[1])  + "," + messageSplit[3]);
                             if(match1.getScore1() >= 10 || match1.getScore2() >= 10){
+
                                 Integer winnerId = match1.getWinnerId() == null ? null : match1.getWinnerId();
+                                if(winnerId != null && user.getID() == winnerId){
+                                    gameDAO.updateStar(winnerId, 2);
+                                }
                                 write("get-result," + Long.parseLong(messageSplit[1]) + "," + messageSplit[2] + "," + messageSplit[3] + "," + winnerId);
                                 opponent.write("get-result," + Long.parseLong(messageSplit[1]) + "," + messageSplit[3] + "," + messageSplit[2] + "," + winnerId);
                             }
@@ -468,6 +472,13 @@ public class ServerThread implements Runnable {
                 {
                 	room = null;
                     Match match1 = gameDAO.getMatchById(Long.parseLong(messageSplit[1]));
+                    if(match1.getWinnerId() == null){
+                        gameDAO.updateStar(user.getID(), 1);
+                    }else{
+                        if(match1.getWinnerId() == user.getID()){
+                            gameDAO.updateStar(match1.getWinnerId(), 2);
+                        }
+                    }
                     String winnerId = match1.getWinnerId() != null ? match1.getWinnerId().toString() : null;
                     write("get-result," + messageSplit[1] + "," + messageSplit[2] + "," + messageSplit[3] + "," + winnerId);
                     System.out.println(message);

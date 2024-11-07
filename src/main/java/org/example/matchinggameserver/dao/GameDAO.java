@@ -78,8 +78,8 @@ public class GameDAO extends DAO{
 //                        updateStar(winnerId, starIncrement);
 
                         // Thêm lịch sử trận đấu cho cả hai người chơi vào bảng `match_history`
-                        insertMatchHistory(player1Id, matchId, winnerId == player1Id ? "Win" : "Lose", player1Score);
-                        insertMatchHistory(player2Id, matchId, winnerId == player2Id ? "Win" : "Lose", player2Score);
+//                        insertMatchHistory(player1Id, matchId, winnerId == player1Id ? "Win" : "Lose", player1Score);
+//                        insertMatchHistory(player2Id, matchId, winnerId == player2Id ? "Win" : "Lose", player2Score);
                     }
 
                     // Tạo đối tượng Match để trả về
@@ -142,12 +142,6 @@ public class GameDAO extends DAO{
                     match.setWinnerId(null);  // Hoà, không có người thắng
                 }
 
-                if(match.getWinnerId() == null){
-                    updateStar(rs.getInt("player1_id"), 1);
-                    updateStar(rs.getInt("player2_id"), 1);
-                }else{
-                    updateStar(match.getWinnerId(), 2);
-                }
                 // Cập nhật winner_id trong CSDL nếu cần
                 Long currentWinnerId = rs.getLong("winner_id");
                 if (match.getWinnerId() != null && !match.getWinnerId().equals(currentWinnerId)) {
@@ -251,7 +245,7 @@ public class GameDAO extends DAO{
                     updateStmt.executeUpdate();
                 }
             }
-
+            updateStar(winnerId, 2);
             // Lấy thông tin của match
             try (PreparedStatement selectStmt = con.prepareStatement(selectQuery)) {
                 selectStmt.setLong(1, matchId);
@@ -366,17 +360,15 @@ public class GameDAO extends DAO{
                 int pointsEarned = 0;
 
                 // Determine the result and pointsEarned
-                if (winnerId != null) {
-                    if (userId == winnerId){
-                        result = "win";
-                        pointsEarned = 2;
-                    } else if (player1Score.equals(player2Score)) {
-                        result = "draw";
-                        pointsEarned = 1;
-                    }
+                if (winnerId != 0 && userId==winnerId) {
+                    result = "win";
+                    pointsEarned = 2;
+                } else if (winnerId == 0) {
+                    result = "draw";
+                    pointsEarned = 1;
                 }
 
-                MatchHistory matchHistory = new MatchHistory((long) userId, matchId, result, pointsEarned, createdAt);
+                MatchHistory matchHistory = new MatchHistory((long) (userId == player1Id ? player2Id : player1Id), matchId, result, pointsEarned, createdAt);
                 historyList.add(matchHistory);
             }
         } catch (SQLException e) {
@@ -414,13 +406,13 @@ public class GameDAO extends DAO{
                 if ((userId == player1Id && player1Score > player2Score) ||
                         (userId == player2Id && player2Score > player1Score)) {
                     result = "win";
-                    pointsEarned = 1;
+                    pointsEarned = 2;
                 } else if (player1Score.equals(player2Score)) {
                     result = "draw";
-                    pointsEarned = 0;
+                    pointsEarned = 1;
                 } else {
                     result = "lose";
-                    pointsEarned = -1;
+                    pointsEarned = 0;
                 }
 
                 // Add match history record for the user
