@@ -1,0 +1,21 @@
+.label {
+    -fx-font-weight: bold;
+}
+
+.button{
+    -fx-background-radius: 40px;
+}
+.pane-style {
+    -fx-background-color: rgba(255, 255, 255, 1); /* Màu trắng với độ mờ 50% */
+}
+.label-style {
+    -fx-text-fill: #211d1da3; /* Màu chữ đỏ */
+    -fx-font-size: 52px; /* Kích thước chữ */
+}
+.anchor-pane-background {
+    -fx-background-image: url("back1.jpg"); /* Đường dẫn đến hình ảnh */
+    -fx-background-size: cover; /* Đảm bảo hình ảnh bao phủ toàn bộ AnchorPane */
+    -fx-background-position: center; /* Đặt hình ảnh ở giữa */
+}
+
+
