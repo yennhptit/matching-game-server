@@ -475,6 +475,10 @@ public class ServerThread implements Runnable {
                 {
                     write("home-to-history-success");
                 }
+                if(messageSplit[0].equals("practice-to-home"))
+                {
+                    write("practice-to-home-success");
+                }
                 if(messageSplit[0].equals("show-histoy"))
                 {
                     List<MatchHistory> matchHistories = gameDAO.getHistory(Integer.parseInt(messageSplit[1]));
