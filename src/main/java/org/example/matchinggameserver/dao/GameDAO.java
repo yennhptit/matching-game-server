@@ -180,9 +180,9 @@ public class GameDAO extends DAO{
 
     public String getMatchStats(int userId1, int userId2) {
         String sql = "SELECT " +
-                "   SUM(CASE WHEN winner_id = 0 THEN 1 ELSE 0 END) AS draws, " +
+                "   SUM(CASE WHEN winner_id is null THEN 1 ELSE 0 END) AS draws, " +
                 "   SUM(CASE WHEN winner_id = ? THEN 1 ELSE 0 END) AS wins, " +
-                "   SUM(CASE WHEN winner_id != ? AND winner_id != 0 THEN 1 ELSE 0 END) AS losses " +
+                "   SUM(CASE WHEN winner_id != ? THEN 1 ELSE 0 END) AS losses " +
                 "FROM `match` " +
                 "WHERE (player1_id = ? AND player2_id = ?) OR (player1_id = ? AND player2_id = ?)";
         String result = "";

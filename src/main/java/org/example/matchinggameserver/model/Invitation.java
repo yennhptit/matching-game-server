@@ -17,15 +17,20 @@ public class Invitation {
     
     public Invitation(User sender, ServerThread serverThread)
     {
-        this.sender = sender;
-        this.serverThread = serverThread;
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.schedule(() -> {
-            serverThread.removeInvitation(sender.getID());
-            System.out.println("removed invitation with sender: " + sender.getUsername()
-            + " and receiver: " + serverThread.getUser().getUsername());
-            executor.shutdown();
-        }, existTime, TimeUnit.SECONDS);
+        try{
+            this.sender = sender;
+            this.serverThread = serverThread;
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(() -> {
+                serverThread.removeInvitation(sender.getID());
+                System.out.println("removed invitation with sender: " + sender.getUsername()
+                        + " and receiver: " + serverThread.getUser().getUsername());
+                executor.shutdown();
+            }, existTime, TimeUnit.SECONDS);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
     }
     
     public int getSenderID()

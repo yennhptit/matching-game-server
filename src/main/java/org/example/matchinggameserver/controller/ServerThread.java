@@ -565,6 +565,7 @@ public class ServerThread implements Runnable {
             //Cập nhật trạng thái của user
             if (this.user != null) {
                 userDAO.updateToOffline(this.user.getID());
+                System.out.println(1);
                 userDAO.updateToNotPlaying(this.user.getID());
                 adminController.addMessage("[" + user.getID() + "] " + user.getUsername() + ": đã offline");
 
